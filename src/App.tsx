@@ -24,10 +24,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/cases/:id" element={<CaseWorkspace />} />
-          <Route path="/cases" element={<PlaceholderPage title="Cases" icon={Briefcase} description="Browse and manage all insurance cases across workflows." />} />
-          <Route path="/workflows" element={<PlaceholderPage title="Workflows" icon={GitBranch} description="Build and manage automated insurance processing workflows." />} />
-          <Route path="/agents" element={<PlaceholderPage title="AI Agents" icon={Bot} description="Monitor and configure AI agents processing your cases." />} />
-          <Route path="/documents" element={<PlaceholderPage title="Documents" icon={FileText} description="Central document repository for all case files." />} />
+          <Route path="/cases" element={<CasesPage />} />
+          <Route path="/workflows" element={<WorkflowsPage />} />
+          <Route path="/agents" element={<AgentsPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/analytics" element={<PlaceholderPage title="Analytics" icon={BarChart3} description="Track processing metrics, automation rates, and team performance." />} />
           <Route path="/admin" element={<PlaceholderPage title="Admin" icon={Settings} description="Manage users, roles, departments, and integration settings." />} />
           <Route path="*" element={<NotFound />} />
