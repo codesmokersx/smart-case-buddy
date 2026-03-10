@@ -3,14 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { BarChart3, Settings } from "lucide-react";
 import Index from "./pages/Index";
 import CaseWorkspace from "./pages/CaseWorkspace";
 import CasesPage from "./pages/CasesPage";
 import WorkflowsPage from "./pages/WorkflowsPage";
 import AgentsPage from "./pages/AgentsPage";
 import DocumentsPage from "./pages/DocumentsPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
