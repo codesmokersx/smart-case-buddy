@@ -92,7 +92,7 @@ export const mockDocuments: DocumentItem[] = [
 export type WorkflowStatus = "active" | "draft" | "paused";
 
 export interface WorkflowTrigger {
-  type: "mailbox" | "webhook" | "manual" | "schedule";
+  type: "mailbox" | "webhook" | "manual" | "schedule" | "phone";
   config: string;
 }
 
@@ -107,6 +107,7 @@ export interface Workflow {
   stages: string[];
   casesProcessed: number;
   lastRun: string;
+  department: string;
 }
 
 export const mockWorkflows: Workflow[] = [
@@ -124,6 +125,7 @@ export const mockWorkflows: Workflow[] = [
     stages: ["Application Submission", "Document Parsing", "Medical Record Extraction", "Missing Data Detection", "Underwriting Packet Assembly", "Underwriter Review"],
     casesProcessed: 142,
     lastRun: "3 min ago",
+    department: "Underwriting",
   },
   {
     id: "WF-002",
@@ -138,6 +140,7 @@ export const mockWorkflows: Workflow[] = [
     stages: ["Claim Submission", "Document Parsing", "EOB Structuring", "Fact Extraction", "Case Assembly", "Adjudication Support"],
     casesProcessed: 89,
     lastRun: "8 min ago",
+    department: "Claims",
   },
   {
     id: "WF-003",
@@ -153,6 +156,7 @@ export const mockWorkflows: Workflow[] = [
     stages: ["Upload Census File", "Eligibility Validation", "Plan Rule Verification", "Discrepancy Detection", "Compliance Report"],
     casesProcessed: 56,
     lastRun: "1 hr ago",
+    department: "Enrollment",
   },
   {
     id: "WF-004",
@@ -167,6 +171,7 @@ export const mockWorkflows: Workflow[] = [
     stages: ["Upload Policies", "Clause Extraction", "Difference Highlighting", "Redline Report"],
     casesProcessed: 0,
     lastRun: "Never",
+    department: "Compliance",
   },
   {
     id: "WF-005",
@@ -181,12 +186,111 @@ export const mockWorkflows: Workflow[] = [
     stages: ["Claim Flagging", "Priority Assessment", "Routing", "Escalation"],
     casesProcessed: 23,
     lastRun: "2 days ago",
+    department: "Claims",
+  },
+  // ── New insurance department workflows ──
+  {
+    id: "WF-006",
+    name: "Underwriting Risk Assessment",
+    description: "Automated risk scoring, medical history analysis, and actuarial table matching for policy pricing",
+    status: "active",
+    agentId: "AGT-005",
+    agentName: "Underwriting Assessment Agent",
+    triggers: [
+      { type: "webhook", config: "https://api.insurai.com/webhooks/underwriting" },
+      { type: "mailbox", config: "underwriting@insurai.com" },
+    ],
+    stages: ["Application Intake", "Medical History Analysis", "Risk Factor Scoring", "Actuarial Table Matching", "Premium Calculation", "Underwriter Decision"],
+    casesProcessed: 218,
+    lastRun: "5 min ago",
+    department: "Underwriting",
+  },
+  {
+    id: "WF-007",
+    name: "Fraud Detection & SIU Referral",
+    description: "Pattern-based anomaly detection, cross-reference checking, and Special Investigations Unit referral",
+    status: "active",
+    agentId: "AGT-006",
+    agentName: "Fraud Detection Agent",
+    triggers: [
+      { type: "schedule", config: "Every 30 minutes" },
+      { type: "webhook", config: "https://api.insurai.com/webhooks/fraud-alert" },
+    ],
+    stages: ["Claim Screening", "Pattern Analysis", "Provider Cross-Reference", "Anomaly Scoring", "SIU Referral", "Investigation Tracking"],
+    casesProcessed: 1345,
+    lastRun: "12 min ago",
+    department: "Fraud & SIU",
+  },
+  {
+    id: "WF-008",
+    name: "Member Inquiry & Inbound Call Handling",
+    description: "AI-powered inbound call routing, real-time member lookup, benefits inquiry resolution, and call summarization",
+    status: "active",
+    agentId: "AGT-007",
+    agentName: "Member Services Agent",
+    triggers: [
+      { type: "phone", config: "+1-800-INSURAI (inbound IVR)" },
+      { type: "webhook", config: "https://api.insurai.com/webhooks/member-inquiry" },
+    ],
+    stages: ["Call Reception / IVR", "Member Identity Verification", "Benefits Lookup", "Inquiry Resolution", "Call Summary & Case Creation", "Follow-up Scheduling"],
+    casesProcessed: 3420,
+    lastRun: "1 min ago",
+    department: "Member Services",
+  },
+  {
+    id: "WF-009",
+    name: "Appeals & Grievances Processing",
+    description: "End-to-end appeals intake, clinical review coordination, and regulatory timeline tracking",
+    status: "active",
+    agentId: "AGT-008",
+    agentName: "Appeals & Grievances Agent",
+    triggers: [
+      { type: "mailbox", config: "appeals@insurai.com" },
+      { type: "manual", config: "Triggered by member services" },
+    ],
+    stages: ["Appeal Intake", "Document Completeness Check", "Clinical Review Routing", "Medical Director Decision", "Member Notification", "Regulatory Reporting"],
+    casesProcessed: 87,
+    lastRun: "45 min ago",
+    department: "Appeals",
+  },
+  {
+    id: "WF-010",
+    name: "Premium Billing & Reconciliation",
+    description: "Automated premium calculation, invoice generation, payment tracking, and delinquency management",
+    status: "active",
+    agentId: "AGT-009",
+    agentName: "Premium Billing Agent",
+    triggers: [
+      { type: "schedule", config: "1st of every month" },
+      { type: "webhook", config: "https://api.insurai.com/webhooks/payments" },
+    ],
+    stages: ["Census Reconciliation", "Premium Calculation", "Invoice Generation", "Payment Tracking", "Delinquency Detection", "Grace Period Management"],
+    casesProcessed: 456,
+    lastRun: "2 hr ago",
+    department: "Billing",
+  },
+  {
+    id: "WF-011",
+    name: "Provider Credentialing & Network",
+    description: "Provider application verification, license validation, network adequacy analysis",
+    status: "draft",
+    agentId: "AGT-010",
+    agentName: "Provider Network Agent",
+    triggers: [
+      { type: "mailbox", config: "providers@insurai.com" },
+      { type: "manual", config: "Triggered by network team" },
+    ],
+    stages: ["Application Receipt", "License & DEA Verification", "Malpractice History Check", "Credentialing Committee Review", "Contract Issuance", "Network Directory Update"],
+    casesProcessed: 34,
+    lastRun: "3 days ago",
+    department: "Provider Relations",
   },
 ];
 
 // ── AI Agents ──
 
 export type AgentStatus = "running" | "idle" | "error" | "testing";
+export type AgentType = "document_processing" | "voice_inbound" | "voice_outbound" | "decision_engine" | "monitoring" | "orchestrator";
 
 export interface AgentTool {
   name: string;
@@ -209,6 +313,7 @@ export interface AIAgent {
   description: string;
   model: string;
   status: AgentStatus;
+  agentType: AgentType;
   tools: AgentTool[];
   knowledgeBase: KnowledgeBaseItem[];
   policyRules: string[];
@@ -217,7 +322,33 @@ export interface AIAgent {
   avgProcessingTime: string;
   lastActive: string;
   integrations: string[];
+  department: string;
 }
+
+export const AGENT_TYPES: { value: AgentType; label: string; description: string }[] = [
+  { value: "document_processing", label: "Document Processing", description: "Parse, extract, and validate documents" },
+  { value: "voice_inbound", label: "Inbound Call Agent", description: "Handle incoming phone calls and IVR" },
+  { value: "voice_outbound", label: "Outbound Call Agent", description: "Make outgoing calls for follow-ups" },
+  { value: "decision_engine", label: "Decision Engine", description: "Evaluate rules and make determinations" },
+  { value: "monitoring", label: "Monitoring & Alerts", description: "Watch for patterns and anomalies" },
+  { value: "orchestrator", label: "Orchestrator", description: "Route and coordinate between agents" },
+];
+
+export const AVAILABLE_MODELS = [
+  { value: "GPT-4o", label: "GPT-4o", provider: "OpenAI", tier: "premium" },
+  { value: "GPT-4o Mini", label: "GPT-4o Mini", provider: "OpenAI", tier: "standard" },
+  { value: "GPT-5", label: "GPT-5", provider: "OpenAI", tier: "premium" },
+  { value: "Claude 3.5 Sonnet", label: "Claude 3.5 Sonnet", provider: "Anthropic", tier: "premium" },
+  { value: "Claude 3.5 Haiku", label: "Claude 3.5 Haiku", provider: "Anthropic", tier: "standard" },
+  { value: "Gemini 2.0 Flash", label: "Gemini 2.0 Flash", provider: "Google", tier: "standard" },
+  { value: "Gemini 1.5 Pro", label: "Gemini 1.5 Pro", provider: "Google", tier: "premium" },
+  { value: "Llama 3.1 70B", label: "Llama 3.1 70B", provider: "Meta", tier: "open-source" },
+];
+
+export const INSURANCE_DEPARTMENTS = [
+  "Underwriting", "Claims", "Member Services", "Enrollment",
+  "Compliance", "Fraud & SIU", "Appeals", "Billing", "Provider Relations",
+];
 
 export const mockAgents: AIAgent[] = [
   {
@@ -227,6 +358,8 @@ export const mockAgents: AIAgent[] = [
     description: "Reads incoming submissions, extracts attachments, creates case records, and routes to appropriate workflows",
     model: "GPT-4o",
     status: "running",
+    agentType: "document_processing",
+    department: "Claims",
     tools: [
       { name: "PDF Parser", description: "Extract text and tables from PDF documents", enabled: true },
       { name: "OCR Engine", description: "Optical character recognition for scanned documents", enabled: true },
@@ -256,6 +389,8 @@ export const mockAgents: AIAgent[] = [
     description: "Detects missing documents, validates formats, checks completeness, and sends document requests",
     model: "GPT-4o",
     status: "running",
+    agentType: "document_processing",
+    department: "Claims",
     tools: [
       { name: "Document Checker", description: "Validate document completeness and format", enabled: true },
       { name: "Missing Doc Detector", description: "Identify required but absent documents", enabled: true },
@@ -284,6 +419,8 @@ export const mockAgents: AIAgent[] = [
     description: "Checks coverage rules, verifies limits, detects exclusions, and ensures policy compliance",
     model: "Claude 3.5 Sonnet",
     status: "idle",
+    agentType: "decision_engine",
+    department: "Compliance",
     tools: [
       { name: "Rule Engine", description: "Evaluate coverage rules against case data", enabled: true },
       { name: "Exclusion Detector", description: "Identify policy exclusions and limitations", enabled: true },
@@ -313,6 +450,8 @@ export const mockAgents: AIAgent[] = [
     description: "Routes cases to appropriate queues, assigns adjudicators, and escalates suspicious claims",
     model: "Gemini 2.0 Flash",
     status: "error",
+    agentType: "orchestrator",
+    department: "Claims",
     tools: [
       { name: "Queue Manager", description: "Manage case routing queues", enabled: true },
       { name: "Assignment Engine", description: "Auto-assign cases to available processors", enabled: true },
@@ -333,5 +472,200 @@ export const mockAgents: AIAgent[] = [
     avgProcessingTime: "0.5 min",
     lastActive: "1 hr ago",
     integrations: ["Slack", "Team Calendar API"],
+  },
+  // ── New insurance department agents ──
+  {
+    id: "AGT-005",
+    name: "Underwriting Assessment Agent",
+    role: "Risk Analysis & Pricing",
+    description: "Analyzes medical history, calculates risk scores using actuarial models, and recommends premium tiers for new applications",
+    model: "GPT-4o",
+    status: "running",
+    agentType: "decision_engine",
+    department: "Underwriting",
+    tools: [
+      { name: "Risk Scorer", description: "Multi-factor risk score calculation", enabled: true },
+      { name: "Medical History Analyzer", description: "Parse and evaluate medical records for risk factors", enabled: true },
+      { name: "Actuarial Table Lookup", description: "Match risk profile to actuarial pricing tables", enabled: true },
+      { name: "MIB Query", description: "Query Medical Information Bureau for prior applications", enabled: true },
+    ],
+    knowledgeBase: [
+      { id: "KB-11", name: "Actuarial Tables 2024", type: "csv", size: "15.2 MB", indexed: true },
+      { id: "KB-12", name: "Underwriting Guidelines v4", type: "policy", size: "6.8 MB", indexed: true },
+      { id: "KB-13", name: "Risk Classification Manual", type: "pdf", size: "3.1 MB", indexed: true },
+    ],
+    policyRules: [
+      "BMI > 40 triggers enhanced medical review",
+      "Tobacco use adds 25% surcharge per ACA guidelines",
+      "Family history of hereditary conditions requires specialist review",
+      "Coverage > $1M requires reinsurance treaty check",
+    ],
+    tasksProcessed: 1856,
+    successRate: 97.4,
+    avgProcessingTime: "4.2 min",
+    lastActive: "5 min ago",
+    integrations: ["MIB Database", "Actuarial Engine", "Reinsurance API"],
+  },
+  {
+    id: "AGT-006",
+    name: "Fraud Detection Agent",
+    role: "Anomaly Detection & Investigation",
+    description: "Monitors claims for fraudulent patterns, cross-references provider networks, scores anomalies, and generates SIU referral packets",
+    model: "Claude 3.5 Sonnet",
+    status: "running",
+    agentType: "monitoring",
+    department: "Fraud & SIU",
+    tools: [
+      { name: "Pattern Analyzer", description: "Statistical anomaly detection across claims history", enabled: true },
+      { name: "Provider Cross-Ref", description: "Cross-reference claims against provider sanctioned lists", enabled: true },
+      { name: "Billing Code Validator", description: "Detect upcoding, unbundling, and impossible procedure combinations", enabled: true },
+      { name: "Network Graph Builder", description: "Build relationship graphs between providers, members, and facilities", enabled: true },
+    ],
+    knowledgeBase: [
+      { id: "KB-14", name: "NICB Fraud Indicators", type: "rules", size: "420 KB", indexed: true },
+      { id: "KB-15", name: "OIG Exclusion List", type: "csv", size: "28.4 MB", indexed: true },
+      { id: "KB-16", name: "Historical Fraud Cases", type: "csv", size: "5.6 MB", indexed: true },
+    ],
+    policyRules: [
+      "Flag claims from sanctioned providers immediately",
+      "Score > 0.85 auto-refers to SIU",
+      "Phantom billing detection: >5 claims same day same provider",
+      "Upcoding threshold: 3+ standard deviations from peer group",
+    ],
+    tasksProcessed: 12450,
+    successRate: 99.1,
+    avgProcessingTime: "0.8 min",
+    lastActive: "1 min ago",
+    integrations: ["NICB API", "OIG Database", "SIU Portal", "NHCAA Network"],
+  },
+  {
+    id: "AGT-007",
+    name: "Member Services Agent",
+    role: "Inbound Call Handling & Member Support",
+    description: "AI-powered inbound call agent that handles member inquiries via IVR/voice, performs real-time benefits lookup, resolves common questions, and escalates complex issues to human agents",
+    model: "GPT-4o",
+    status: "running",
+    agentType: "voice_inbound",
+    department: "Member Services",
+    tools: [
+      { name: "Voice Transcription", description: "Real-time speech-to-text for call processing", enabled: true },
+      { name: "Member Lookup", description: "Search member records by ID, SSN last-4, or DOB", enabled: true },
+      { name: "Benefits Calculator", description: "Real-time deductible, copay, and OOP max lookups", enabled: true },
+      { name: "Call Summarizer", description: "Auto-generate call summary and case notes", enabled: true },
+      { name: "IVR Router", description: "Intelligent IVR menu routing based on intent detection", enabled: true },
+      { name: "Outbound Follow-up", description: "Schedule and trigger follow-up calls or messages", enabled: false },
+    ],
+    knowledgeBase: [
+      { id: "KB-17", name: "Member FAQ Database", type: "csv", size: "1.8 MB", indexed: true },
+      { id: "KB-18", name: "Benefits Summary Guide 2024", type: "pdf", size: "4.2 MB", indexed: true },
+      { id: "KB-19", name: "Call Handling Scripts", type: "rules", size: "560 KB", indexed: true },
+      { id: "KB-20", name: "Provider Directory", type: "csv", size: "22.1 MB", indexed: true },
+    ],
+    policyRules: [
+      "Verify member identity with 2-factor authentication (DOB + Member ID)",
+      "Never disclose PHI without identity verification",
+      "Escalate to human agent if member requests supervisor",
+      "Auto-create case for any call exceeding 10 minutes",
+      "Record call consent statement before proceeding",
+    ],
+    tasksProcessed: 8934,
+    successRate: 92.6,
+    avgProcessingTime: "6.2 min",
+    lastActive: "Just now",
+    integrations: ["Telephony API", "IVR System", "CRM", "Twilio Voice", "Call Recording"],
+  },
+  {
+    id: "AGT-008",
+    name: "Appeals & Grievances Agent",
+    role: "Appeals Processing & Regulatory Compliance",
+    description: "Manages the full appeals lifecycle from intake through resolution, coordinates clinical reviews, and tracks regulatory deadlines",
+    model: "Claude 3.5 Sonnet",
+    status: "idle",
+    agentType: "document_processing",
+    department: "Appeals",
+    tools: [
+      { name: "Appeal Classifier", description: "Classify appeal type (clinical, administrative, expedited)", enabled: true },
+      { name: "Deadline Tracker", description: "Monitor state and federal appeal response deadlines", enabled: true },
+      { name: "Clinical Review Router", description: "Route to appropriate medical director by specialty", enabled: true },
+      { name: "Notification Generator", description: "Generate compliant member acknowledgment and decision letters", enabled: true },
+    ],
+    knowledgeBase: [
+      { id: "KB-21", name: "Appeal Regulations by State", type: "rules", size: "2.8 MB", indexed: true },
+      { id: "KB-22", name: "CMS Appeal Requirements", type: "pdf", size: "8.4 MB", indexed: true },
+      { id: "KB-23", name: "Letter Templates", type: "pdf", size: "1.1 MB", indexed: true },
+    ],
+    policyRules: [
+      "Expedited appeals must be processed within 72 hours",
+      "Standard appeals: 30-day response for commercial, 60-day for government",
+      "All denials require peer-to-peer review option disclosure",
+      "Track IRE (Independent Review Entity) referral deadlines",
+    ],
+    tasksProcessed: 342,
+    successRate: 95.8,
+    avgProcessingTime: "8.5 min",
+    lastActive: "45 min ago",
+    integrations: ["Clinical Review System", "Regulatory Calendar", "Member Portal"],
+  },
+  {
+    id: "AGT-009",
+    name: "Premium Billing Agent",
+    role: "Billing, Invoicing & Payment",
+    description: "Automates premium calculations, generates invoices, tracks payments, manages grace periods, and detects delinquencies",
+    model: "Gemini 2.0 Flash",
+    status: "running",
+    agentType: "decision_engine",
+    department: "Billing",
+    tools: [
+      { name: "Premium Calculator", description: "Calculate premiums based on census and plan selections", enabled: true },
+      { name: "Invoice Generator", description: "Generate and distribute monthly invoices", enabled: true },
+      { name: "Payment Matcher", description: "Match incoming payments to outstanding invoices", enabled: true },
+      { name: "Delinquency Alerter", description: "Flag accounts approaching grace period expiration", enabled: true },
+    ],
+    knowledgeBase: [
+      { id: "KB-24", name: "Rate Tables 2024", type: "csv", size: "6.2 MB", indexed: true },
+      { id: "KB-25", name: "Billing Rules & Grace Periods", type: "rules", size: "340 KB", indexed: true },
+    ],
+    policyRules: [
+      "ACA 90-day grace period for subsidized members",
+      "30-day grace period for non-subsidized commercial",
+      "COBRA continuation requires 45-day election window",
+      "Generate dunning notices at 15, 30, and 60 days past due",
+    ],
+    tasksProcessed: 2340,
+    successRate: 99.6,
+    avgProcessingTime: "0.3 min",
+    lastActive: "2 hr ago",
+    integrations: ["Payment Gateway", "Bank Reconciliation", "ERP System"],
+  },
+  {
+    id: "AGT-010",
+    name: "Provider Network Agent",
+    role: "Credentialing & Network Management",
+    description: "Verifies provider credentials, validates licenses and DEA registrations, manages network adequacy, and maintains provider directories",
+    model: "GPT-4o Mini",
+    status: "testing",
+    agentType: "document_processing",
+    department: "Provider Relations",
+    tools: [
+      { name: "License Verifier", description: "Validate state medical licenses and DEA registrations", enabled: true },
+      { name: "NPPES Lookup", description: "Query NPI registry for provider information", enabled: true },
+      { name: "Malpractice Checker", description: "Check malpractice claims history", enabled: true },
+      { name: "Network Adequacy Analyzer", description: "Analyze network coverage by geography and specialty", enabled: false },
+    ],
+    knowledgeBase: [
+      { id: "KB-26", name: "NCQA Credentialing Standards", type: "pdf", size: "3.4 MB", indexed: true },
+      { id: "KB-27", name: "State Licensing Requirements", type: "rules", size: "890 KB", indexed: true },
+    ],
+    policyRules: [
+      "Re-credentialing required every 36 months",
+      "Verify board certification within 180 days of application",
+      "OIG/SAM exclusion check required before onboarding",
+      "Maintain minimum network adequacy per CMS standards",
+    ],
+    tasksProcessed: 156,
+    successRate: 88.5,
+    avgProcessingTime: "12.4 min",
+    lastActive: "3 days ago",
+    integrations: ["NPPES Registry", "State License APIs", "CAQH ProView"],
   },
 ];
