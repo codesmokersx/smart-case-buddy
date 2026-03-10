@@ -28,8 +28,8 @@ const App = () => (
           <Route path="/workflows" element={<WorkflowsPage />} />
           <Route path="/agents" element={<AgentsPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/analytics" element={<PlaceholderPage title="Analytics" icon={BarChart3} description="Track processing metrics, automation rates, and team performance." />} />
-          <Route path="/admin" element={<PlaceholderPage title="Admin" icon={Settings} description="Manage users, roles, departments, and integration settings." />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
