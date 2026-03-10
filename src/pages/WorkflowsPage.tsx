@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
   GitBranch, Plus, Mail, Webhook, Hand, CalendarClock, Bot, Play, Pause,
-  ChevronRight, ArrowLeft, Settings, Trash2, Search, MoreVertical,
+  ChevronRight, ArrowLeft, Settings, Trash2, Search, MoreVertical, Phone,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
