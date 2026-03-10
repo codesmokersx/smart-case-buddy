@@ -18,6 +18,7 @@ const triggerIcons: Record<string, React.ElementType> = {
   webhook: Webhook,
   manual: Hand,
   schedule: CalendarClock,
+  phone: Phone,
 };
 
 const statusColors: Record<WorkflowStatus, string> = {
