@@ -121,11 +121,21 @@ export default function AgentsPage() {
     toast({ title: "Agent created", description: `${agent.name} is ready for configuration.` });
   };
 
+  const handleUpdateAgent = (updated: AIAgent) => {
+    setAgents((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+    setSelectedAgent(updated);
+  };
+
   if (selectedAgent) {
     const currentAgent = agents.find((a) => a.id === selectedAgent.id) || selectedAgent;
     return (
       <AppLayout title="Agent Configuration">
-        <AgentDetail agent={currentAgent} onBack={() => setSelectedAgent(null)} />
+        <AgentDetail
+          agent={currentAgent}
+          onBack={() => setSelectedAgent(null)}
+          onUpdate={handleUpdateAgent}
+          onToggleStatus={() => handleToggleStatus(currentAgent.id)}
+        />
       </AppLayout>
     );
   }
