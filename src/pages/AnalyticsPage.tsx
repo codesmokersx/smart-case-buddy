@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   TrendingUp, TrendingDown, Clock, Bot, Users, FileCheck, ShieldCheck, AlertTriangle,
+  GitBranch, Briefcase, Activity,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -71,13 +72,74 @@ const kpiCards = [
   { label: "Manual Interventions", value: "12.4%", change: "-3.2%", trend: "up" as const, icon: Users },
 ];
 
+/* ── Cases analytics data ── */
+const caseVolumeByMonth = [
+  { month: "Jul", new_app: 42, claims: 68, eligibility: 25, policy: 12 },
+  { month: "Aug", new_app: 48, claims: 72, eligibility: 30, policy: 15 },
+  { month: "Sep", new_app: 55, claims: 80, eligibility: 28, policy: 18 },
+  { month: "Oct", new_app: 52, claims: 85, eligibility: 35, policy: 20 },
+  { month: "Nov", new_app: 60, claims: 90, eligibility: 32, policy: 22 },
+  { month: "Dec", new_app: 45, claims: 78, eligibility: 30, policy: 16 },
+  { month: "Jan", new_app: 65, claims: 95, eligibility: 38, policy: 24 },
+];
+
+const caseResolutionTime = [
+  { type: "New Application", avg: 5.2, target: 4.0 },
+  { type: "Claims Review", avg: 3.8, target: 3.0 },
+  { type: "Eligibility", avg: 2.1, target: 2.0 },
+  { type: "Policy Compare", avg: 6.5, target: 5.0 },
+];
+
+const casesByPriority = [
+  { name: "Critical", value: 8, color: "hsl(0, 72%, 51%)" },
+  { name: "High", value: 22, color: "hsl(38, 92%, 50%)" },
+  { name: "Medium", value: 45, color: "hsl(220, 70%, 45%)" },
+  { name: "Low", value: 25, color: "hsl(173, 58%, 39%)" },
+];
+
+const casesByAssignee = [
+  { assignee: "Sarah Chen", open: 12, completed: 45, escalated: 2 },
+  { assignee: "Mike Torres", open: 8, completed: 38, escalated: 1 },
+  { assignee: "Lisa Park", open: 6, completed: 52, escalated: 0 },
+  { assignee: "James Rodriguez", open: 4, completed: 28, escalated: 3 },
+  { assignee: "Unassigned", open: 15, completed: 0, escalated: 0 },
+];
+
+/* ── Workflow analytics data ── */
+const workflowThroughput = [
+  { month: "Jul", active: 5, completed: 180, failed: 8 },
+  { month: "Aug", active: 6, completed: 220, failed: 6 },
+  { month: "Sep", active: 7, completed: 260, failed: 5 },
+  { month: "Oct", active: 8, completed: 300, failed: 7 },
+  { month: "Nov", active: 9, completed: 340, failed: 4 },
+  { month: "Dec", active: 9, completed: 310, failed: 6 },
+  { month: "Jan", active: 11, completed: 380, failed: 3 },
+];
+
+const workflowByDepartment = [
+  { dept: "Claims", workflows: 3, cases: 254, avgTime: "3.2h" },
+  { dept: "Underwriting", workflows: 2, cases: 360, avgTime: "5.1h" },
+  { dept: "Member Services", workflows: 1, cases: 3420, avgTime: "0.4h" },
+  { dept: "Fraud & SIU", workflows: 1, cases: 1345, avgTime: "1.8h" },
+  { dept: "Appeals", workflows: 1, cases: 87, avgTime: "8.2h" },
+  { dept: "Billing", workflows: 1, cases: 456, avgTime: "2.5h" },
+  { dept: "Provider Relations", workflows: 1, cases: 34, avgTime: "12h" },
+];
+
+const workflowSuccessRate = [
+  { name: "New App Processing", value: 96, color: "hsl(173, 58%, 39%)" },
+  { name: "Claims Intelligence", value: 98, color: "hsl(220, 70%, 45%)" },
+  { name: "Eligibility Verify", value: 94, color: "hsl(38, 92%, 50%)" },
+  { name: "Fraud Detection", value: 99, color: "hsl(280, 60%, 50%)" },
+  { name: "Inbound Calls", value: 92, color: "hsl(0, 72%, 51%)" },
+];
+
 const AnalyticsPage = () => {
   const [dateRange, setDateRange] = useState("7d");
 
   return (
     <AppLayout title="Analytics">
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">
@@ -85,9 +147,7 @@ const AnalyticsPage = () => {
             </p>
           </div>
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[140px] h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="24h">Last 24 hours</SelectItem>
               <SelectItem value="7d">Last 7 days</SelectItem>
@@ -100,12 +160,7 @@ const AnalyticsPage = () => {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {kpiCards.map((kpi, i) => (
-            <motion.div
-              key={kpi.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-            >
+            <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}>
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -114,11 +169,7 @@ const AnalyticsPage = () => {
                   </div>
                   <p className="mt-1 text-2xl font-semibold tracking-tight">{kpi.value}</p>
                   <div className="mt-1 flex items-center gap-1">
-                    {kpi.trend === "up" ? (
-                      <TrendingUp className="h-3 w-3 text-success" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3 text-destructive" />
-                    )}
+                    <TrendingUp className="h-3 w-3 text-success" />
                     <span className="text-[11px] text-success">{kpi.change}</span>
                   </div>
                 </CardContent>
@@ -130,6 +181,8 @@ const AnalyticsPage = () => {
         <Tabs defaultValue="operations" className="space-y-4">
           <TabsList>
             <TabsTrigger value="operations" className="text-xs">Operations</TabsTrigger>
+            <TabsTrigger value="cases" className="text-xs gap-1.5"><Briefcase className="h-3 w-3" /> Cases</TabsTrigger>
+            <TabsTrigger value="workflows" className="text-xs gap-1.5"><GitBranch className="h-3 w-3" /> Workflows</TabsTrigger>
             <TabsTrigger value="agents" className="text-xs">AI Agents</TabsTrigger>
             <TabsTrigger value="compliance" className="text-xs">Compliance &amp; Governance</TabsTrigger>
           </TabsList>
@@ -137,7 +190,6 @@ const AnalyticsPage = () => {
           {/* ── Operations Tab ── */}
           <TabsContent value="operations" className="space-y-4">
             <div className="grid gap-4 lg:grid-cols-2">
-              {/* Claims Over Time */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Claims Processed</CardTitle>
@@ -147,8 +199,8 @@ const AnalyticsPage = () => {
                   <ResponsiveContainer width="100%" height={260}>
                     <AreaChart data={claimsOverTime}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 11 }} />
-                      <YAxis className="text-xs" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Area type="monotone" dataKey="automated" stackId="1" stroke="hsl(220, 70%, 45%)" fill="hsl(220, 70%, 45%)" fillOpacity={0.3} name="Automated" />
@@ -158,7 +210,6 @@ const AnalyticsPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Processing Time */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Processing Time (hours)</CardTitle>
@@ -179,7 +230,6 @@ const AnalyticsPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Cases by Stage */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Cases by Stage</CardTitle>
@@ -198,7 +248,6 @@ const AnalyticsPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Cases by Type */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Cases by Type</CardTitle>
@@ -208,13 +257,182 @@ const AnalyticsPage = () => {
                   <ResponsiveContainer width="100%" height={260}>
                     <PieChart>
                       <Pie data={casesByType} cx="50%" cy="50%" innerRadius={60} outerRadius={95} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
-                        {casesByType.map((entry, i) => (
-                          <Cell key={i} fill={entry.color} />
-                        ))}
+                        {casesByType.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                       </Pie>
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
                     </PieChart>
                   </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* ── Cases Analytics Tab ── */}
+          <TabsContent value="cases" className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Case Volume by Type</CardTitle>
+                  <CardDescription className="text-xs">Monthly case intake across categories</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={caseVolumeByMonth}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar dataKey="new_app" fill="hsl(220, 70%, 45%)" radius={[2, 2, 0, 0]} name="New Application" stackId="a" />
+                      <Bar dataKey="claims" fill="hsl(173, 58%, 39%)" radius={[2, 2, 0, 0]} name="Claims Review" stackId="a" />
+                      <Bar dataKey="eligibility" fill="hsl(38, 92%, 50%)" radius={[2, 2, 0, 0]} name="Eligibility" stackId="a" />
+                      <Bar dataKey="policy" fill="hsl(280, 60%, 50%)" radius={[2, 2, 0, 0]} name="Policy Compare" stackId="a" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Resolution Time vs Target</CardTitle>
+                  <CardDescription className="text-xs">Average resolution time (hours) by case type</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={caseResolutionTime} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis dataKey="type" type="category" tick={{ fontSize: 10 }} width={100} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar dataKey="avg" fill="hsl(220, 70%, 45%)" radius={[0, 4, 4, 0]} name="Actual (hrs)" />
+                      <Bar dataKey="target" fill="hsl(173, 58%, 39%)" radius={[0, 4, 4, 0]} name="Target (hrs)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Cases by Priority</CardTitle>
+                  <CardDescription className="text-xs">Current open case priority distribution</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <PieChart>
+                      <Pie data={casesByPriority} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
+                        {casesByPriority.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                      </Pie>
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Cases by Assignee</CardTitle>
+                  <CardDescription className="text-xs">Workload distribution across team members</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={casesByAssignee}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="assignee" tick={{ fontSize: 9 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar dataKey="open" fill="hsl(38, 92%, 50%)" name="Open" stackId="a" radius={[0, 0, 0, 0]} />
+                      <Bar dataKey="completed" fill="hsl(173, 58%, 39%)" name="Completed" stackId="a" radius={[0, 0, 0, 0]} />
+                      <Bar dataKey="escalated" fill="hsl(0, 72%, 51%)" name="Escalated" stackId="a" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* ── Workflows Analytics Tab ── */}
+          <TabsContent value="workflows" className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Workflow Throughput</CardTitle>
+                  <CardDescription className="text-xs">Completed vs failed executions over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <AreaChart data={workflowThroughput}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid hsl(220, 13%, 91%)" }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Area type="monotone" dataKey="completed" stroke="hsl(173, 58%, 39%)" fill="hsl(173, 58%, 39%)" fillOpacity={0.3} name="Completed" />
+                      <Area type="monotone" dataKey="failed" stroke="hsl(0, 72%, 51%)" fill="hsl(0, 72%, 51%)" fillOpacity={0.3} name="Failed" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Success Rate by Workflow</CardTitle>
+                  <CardDescription className="text-xs">Percentage of successful executions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 mt-2">
+                    {workflowSuccessRate.map((wf) => (
+                      <div key={wf.name} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-medium">{wf.name}</span>
+                          <span className="text-muted-foreground">{wf.value}%</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${wf.value}%`, backgroundColor: wf.color }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="lg:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Workflow Performance by Department</CardTitle>
+                  <CardDescription className="text-xs">Active workflows, total cases processed, and average processing time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 font-medium text-muted-foreground">Department</th>
+                          <th className="text-center py-2 font-medium text-muted-foreground">Workflows</th>
+                          <th className="text-center py-2 font-medium text-muted-foreground">Cases Processed</th>
+                          <th className="text-center py-2 font-medium text-muted-foreground">Avg Time</th>
+                          <th className="text-right py-2 font-medium text-muted-foreground">Throughput</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {workflowByDepartment.map((row) => (
+                          <tr key={row.dept} className="border-b last:border-0">
+                            <td className="py-2.5 font-medium">{row.dept}</td>
+                            <td className="text-center py-2.5">{row.workflows}</td>
+                            <td className="text-center py-2.5 font-semibold">{row.cases.toLocaleString()}</td>
+                            <td className="text-center py-2.5">{row.avgTime}</td>
+                            <td className="text-right py-2.5">
+                              <div className="inline-flex items-center gap-1">
+                                <div className="h-1.5 w-16 rounded-full bg-secondary overflow-hidden">
+                                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (row.cases / 3420) * 100)}%` }} />
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -244,10 +462,7 @@ const AnalyticsPage = () => {
                       </div>
                     </div>
                     <div className="mt-3 h-2 rounded-full bg-secondary overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-success transition-all"
-                        style={{ width: `${agent.success}%` }}
-                      />
+                      <div className="h-full rounded-full bg-success transition-all" style={{ width: `${agent.success}%` }} />
                     </div>
                   </CardContent>
                 </Card>
@@ -258,7 +473,6 @@ const AnalyticsPage = () => {
           {/* ── Compliance & Governance Tab ── */}
           <TabsContent value="compliance" className="space-y-4">
             <div className="grid gap-4 lg:grid-cols-2">
-              {/* Compliance KPIs */}
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
@@ -284,7 +498,6 @@ const AnalyticsPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Audit Summary */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Recent Audit Events</CardTitle>
@@ -292,11 +505,11 @@ const AnalyticsPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {[
-                    { action: "Case CAS-2024-001 accessed by Sarah Chen", time: "2 min ago", type: "access" },
-                    { action: "Medical records exported — audit logged", time: "15 min ago", type: "export" },
-                    { action: "Role 'Claims Processor' assigned to Mike Torres", time: "1 hr ago", type: "role" },
-                    { action: "PHI data masked for external report", time: "2 hrs ago", type: "mask" },
-                    { action: "Access review completed for Q1 2024", time: "1 day ago", type: "review" },
+                    { action: "Case CAS-2024-001 accessed by Sarah Chen", time: "2 min ago" },
+                    { action: "Medical records exported — audit logged", time: "15 min ago" },
+                    { action: "Role 'Claims Processor' assigned to Mike Torres", time: "1 hr ago" },
+                    { action: "PHI data masked for external report", time: "2 hrs ago" },
+                    { action: "Access review completed for Q1 2024", time: "1 day ago" },
                   ].map((event, i) => (
                     <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
                       <div className="mt-0.5 h-2 w-2 rounded-full bg-primary shrink-0" />
