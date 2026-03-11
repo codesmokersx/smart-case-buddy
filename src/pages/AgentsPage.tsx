@@ -587,9 +587,80 @@ function CreateAgentDialog({
 
 /* ──────────────────────── Agent Detail ──────────────────────── */
 
-function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) {
+function AgentDetail({ agent, onBack, onUpdate, onToggleStatus }: { agent: AIAgent; onBack: () => void; onUpdate: (a: AIAgent) => void; onToggleStatus: () => void }) {
   const sc = statusConfig[agent.status];
   const TypeIcon = agentTypeIcons[agent.agentType];
+
+  const [testInput, setTestInput] = useState("");
+  const [testOutput, setTestOutput] = useState("");
+  const [testRunning, setTestRunning] = useState(false);
+  const [newToolName, setNewToolName] = useState("");
+  const [newToolDesc, setNewToolDesc] = useState("");
+  const [showAddTool, setShowAddTool] = useState(false);
+  const [newRule, setNewRule] = useState("");
+
+  const handleSaveConfig = (updates: Partial<AIAgent>) => {
+    onUpdate({ ...agent, ...updates });
+    toast({ title: "Configuration saved" });
+  };
+
+  const handleToggleTool = (toolName: string) => {
+    const updated = agent.tools.map((t) => (t.name === toolName ? { ...t, enabled: !t.enabled } : t));
+    onUpdate({ ...agent, tools: updated });
+  };
+
+  const handleAddTool = () => {
+    if (!newToolName) return;
+    onUpdate({ ...agent, tools: [...agent.tools, { name: newToolName, description: newToolDesc, enabled: true }] });
+    setNewToolName("");
+    setNewToolDesc("");
+    setShowAddTool(false);
+    toast({ title: "Tool added" });
+  };
+
+  const handleRemoveTool = (toolName: string) => {
+    onUpdate({ ...agent, tools: agent.tools.filter((t) => t.name !== toolName) });
+    toast({ title: "Tool removed" });
+  };
+
+  const handleAddRule = () => {
+    if (!newRule) return;
+    onUpdate({ ...agent, policyRules: [...agent.policyRules, newRule] });
+    setNewRule("");
+    toast({ title: "Policy rule added" });
+  };
+
+  const handleRemoveRule = (idx: number) => {
+    onUpdate({ ...agent, policyRules: agent.policyRules.filter((_, i) => i !== idx) });
+    toast({ title: "Policy rule removed" });
+  };
+
+  const handleUploadKB = () => {
+    const newKB = {
+      id: `KB-${Date.now()}`,
+      name: "Uploaded Document.pdf",
+      type: "pdf" as const,
+      size: "1.2 MB",
+      indexed: false,
+    };
+    onUpdate({ ...agent, knowledgeBase: [...agent.knowledgeBase, newKB] });
+    toast({ title: "File uploaded", description: "Document queued for indexing." });
+  };
+
+  const handleRunTest = () => {
+    if (!testInput.trim()) return;
+    setTestRunning(true);
+    setTestOutput("");
+    setTimeout(() => {
+      setTestRunning(false);
+      if (agent.agentType === "voice_inbound") {
+        setTestOutput(`[Call Simulation]\nAgent: Thank you for calling InsurAI. How can I help you today?\nMember: ${testInput}\nAgent: I understand. Let me look up your account and verify your identity. Can you please provide your member ID?\n\n[Result: Successfully handled inquiry]\n[Confidence: 94.2%]\n[Suggested escalation: No]`);
+      } else {
+        setTestOutput(`[Processing Result]\nInput analyzed: ${testInput.substring(0, 50)}...\n\nExtracted Fields:\n- Document Type: Medical Record\n- Key Entities: 3 found\n- Compliance Check: PASSED\n- PHI Detected: Yes (masked in output)\n\n[Confidence: 96.7%]\n[Processing Time: 1.2s]`);
+      }
+      toast({ title: "Test complete", description: "Review the output results." });
+    }, 2000);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -619,15 +690,19 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => {
+            const tabEl = document.querySelector('[data-state="active"][value="testing"]');
+            // Just scroll to testing
+            toast({ title: "Switch to Testing tab", description: "Use the Testing tab to test this agent." });
+          }}>
             <TestTube2 className="h-3.5 w-3.5" /> Test Agent
           </Button>
           {agent.status === "running" ? (
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs text-destructive">
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs text-destructive" onClick={onToggleStatus}>
               <Square className="h-3.5 w-3.5" /> Stop
             </Button>
           ) : (
-            <Button size="sm" className="h-8 gap-1.5 text-xs">
+            <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={onToggleStatus}>
               <Play className="h-3.5 w-3.5" /> Start
             </Button>
           )}
@@ -648,85 +723,7 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
 
         {/* Configuration */}
         <TabsContent value="config" className="mt-4 space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border bg-card p-5 space-y-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Identity</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Name</label>
-                  <Input defaultValue={agent.name} className="h-8 text-xs mt-1" />
-                </div>
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Role</label>
-                  <Input defaultValue={agent.role} className="h-8 text-xs mt-1" />
-                </div>
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Description</label>
-                  <textarea
-                    defaultValue={agent.description}
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-xs min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Department</label>
-                  <Select defaultValue={agent.department}>
-                    <SelectTrigger className="h-8 text-xs mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INSURANCE_DEPARTMENTS.map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-card p-5 space-y-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Model & Performance</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Model</label>
-                  <Select defaultValue={agent.model}>
-                    <SelectTrigger className="h-8 text-xs mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABLE_MODELS.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>
-                          {m.label} ({m.provider})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-lg border p-3 text-center">
-                    <p className="text-lg font-semibold">{agent.tasksProcessed.toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground">Tasks</p>
-                  </div>
-                  <div className="rounded-lg border p-3 text-center">
-                    <p className="text-lg font-semibold text-success">{agent.successRate}%</p>
-                    <p className="text-[10px] text-muted-foreground">Success</p>
-                  </div>
-                  <div className="rounded-lg border p-3 text-center">
-                    <p className="text-lg font-semibold">{agent.avgProcessingTime}</p>
-                    <p className="text-[10px] text-muted-foreground">Avg Time</p>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-[11px] text-muted-foreground">Integrations</label>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {agent.integrations.map((int) => (
-                      <Badge key={int} variant="outline" className="text-[10px]">{int}</Badge>
-                    ))}
-                    <Button variant="ghost" size="sm" className="h-5 px-2 text-[10px]">+ Add</Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ConfigTab agent={agent} onSave={handleSaveConfig} />
         </TabsContent>
 
         {/* Tools */}
@@ -734,13 +731,13 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
           <div className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Tools</h3>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={() => setShowAddTool(true)}>
                 <Plus className="h-3 w-3" /> Add Tool
               </Button>
             </div>
             <div className="space-y-3">
               {agent.tools.map((tool) => (
-                <div key={tool.name} className="flex items-center justify-between rounded-lg border p-3">
+                <div key={tool.name} className="flex items-center justify-between rounded-lg border p-3 group">
                   <div className="flex items-center gap-3">
                     <Wrench className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -748,7 +745,12 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
                       <p className="text-[11px] text-muted-foreground">{tool.description}</p>
                     </div>
                   </div>
-                  <Switch checked={tool.enabled} />
+                  <div className="flex items-center gap-2">
+                    <Switch checked={tool.enabled} onCheckedChange={() => handleToggleTool(tool.name)} />
+                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => handleRemoveTool(tool.name)}>
+                      <XCircle className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -756,6 +758,31 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
               <p className="text-xs text-muted-foreground text-center py-8">No tools configured. Add tools to extend agent capabilities.</p>
             )}
           </div>
+
+          {/* Add Tool Dialog */}
+          <Dialog open={showAddTool} onOpenChange={setShowAddTool}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-base">Add Tool</DialogTitle>
+                <DialogDescription className="text-xs">Define a new tool for this agent</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div>
+                  <label className="text-xs font-medium">Tool Name</label>
+                  <Input value={newToolName} onChange={(e) => setNewToolName(e.target.value)} placeholder="e.g., PDF Merger" className="h-8 text-xs mt-1" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Description</label>
+                  <Input value={newToolDesc} onChange={(e) => setNewToolDesc(e.target.value)} placeholder="What does this tool do?" className="h-8 text-xs mt-1" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button size="sm" className="text-xs" disabled={!newToolName} onClick={handleAddTool}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Tool
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* Knowledge Base */}
@@ -766,13 +793,13 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Knowledge Base</h3>
                 <p className="text-[11px] text-muted-foreground mt-1">Upload files and documents for the agent to reference</p>
               </div>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleUploadKB}>
                 <Upload className="h-3 w-3" /> Upload Files
               </Button>
             </div>
             <div className="space-y-2">
               {agent.knowledgeBase.map((kb) => (
-                <div key={kb.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div key={kb.id} className="flex items-center justify-between rounded-lg border p-3 group">
                   <div className="flex items-center gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -780,18 +807,26 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
                       <p className="text-[10px] text-muted-foreground">{kb.type.toUpperCase()} · {kb.size}</p>
                     </div>
                   </div>
-                  {kb.indexed ? (
-                    <Badge className="bg-success/10 text-success text-[10px]">Indexed</Badge>
-                  ) : (
-                    <Badge className="bg-warning/10 text-warning text-[10px]">Pending Index</Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {kb.indexed ? (
+                      <Badge className="bg-success/10 text-success text-[10px]">Indexed</Badge>
+                    ) : (
+                      <Badge className="bg-warning/10 text-warning text-[10px]">Pending Index</Badge>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => {
+                      onUpdate({ ...agent, knowledgeBase: agent.knowledgeBase.filter((k) => k.id !== kb.id) });
+                      toast({ title: "File removed" });
+                    }}>
+                      <XCircle className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
             {agent.knowledgeBase.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-4 mb-2">No knowledge base files uploaded yet.</p>
             )}
-            <div className="mt-4 rounded-lg border-2 border-dashed p-6 text-center">
+            <div className="mt-4 rounded-lg border-2 border-dashed p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors" onClick={handleUploadKB}>
               <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-xs text-muted-foreground">Drag & drop files here, or click to browse</p>
               <p className="text-[10px] text-muted-foreground mt-1">Supports PDF, CSV, DOCX, TXT</p>
@@ -804,17 +839,20 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
           <div className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Policy Rules</h3>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+            </div>
+            <div className="flex items-center gap-2 mb-4">
+              <Input value={newRule} onChange={(e) => setNewRule(e.target.value)} placeholder="Add a new policy rule..." className="h-8 text-xs flex-1" onKeyDown={(e) => e.key === "Enter" && handleAddRule()} />
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={handleAddRule} disabled={!newRule}>
                 <Plus className="h-3 w-3" /> Add Rule
               </Button>
             </div>
             <div className="space-y-2">
               {agent.policyRules.map((rule, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
+                <div key={i} className="flex items-center gap-3 rounded-lg border p-3 group">
                   <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                   <p className="text-sm flex-1">{rule}</p>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground">
-                    <Settings className="h-3 w-3" />
+                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => handleRemoveRule(i)}>
+                    <XCircle className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               ))}
@@ -909,6 +947,10 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
                 </div>
                 <Switch defaultChecked />
               </div>
+
+              <Button size="sm" className="text-xs" onClick={() => toast({ title: "Telephony settings saved" })}>
+                Save Telephony Settings
+              </Button>
             </div>
           </TabsContent>
         )}
@@ -919,6 +961,8 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
             <div className="rounded-xl border bg-card p-5 space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Test Input</h3>
               <textarea
+                value={testInput}
+                onChange={(e) => setTestInput(e.target.value)}
                 placeholder={
                   agent.agentType === "voice_inbound"
                     ? "Simulate a call transcript or member inquiry..."
@@ -927,28 +971,122 @@ function AgentDetail({ agent, onBack }: { agent: AIAgent; onBack: () => void }) 
                 className="w-full rounded-md border bg-background px-3 py-2 text-xs min-h-[200px] resize-none focus:outline-none focus:ring-2 focus:ring-ring"
               />
               <div className="flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-1.5 text-xs">
-                  <Play className="h-3.5 w-3.5" /> Run Test
+                <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={handleRunTest} disabled={testRunning || !testInput.trim()}>
+                  <Play className="h-3.5 w-3.5" /> {testRunning ? "Running..." : "Run Test"}
                 </Button>
                 {(agent.agentType === "voice_inbound" || agent.agentType === "voice_outbound") && (
-                  <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                  <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => {
+                    setTestInput("Hi, I need to check my benefits coverage for an upcoming surgery.");
+                    toast({ title: "Call simulation loaded" });
+                  }}>
                     <Phone className="h-3.5 w-3.5" /> Simulate Call
                   </Button>
                 )}
-                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-                  <Upload className="h-3.5 w-3.5" /> Upload Test File
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => {
+                  setTestInput("Patient: John Doe, DOB: 01/15/1985, Policy: PPO-500K, Diagnosis: ACL tear (S83.511A), Provider: Dr. Smith, Facility: Mercy General Hospital");
+                  toast({ title: "Test file loaded" });
+                }}>
+                  <Upload className="h-3.5 w-3.5" /> Load Sample
                 </Button>
               </div>
             </div>
             <div className="rounded-xl border bg-card p-5 space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Test Output</h3>
-              <div className="rounded-lg bg-muted p-4 min-h-[200px] text-xs text-muted-foreground font-mono">
-                Run a test to see the agent's output here...
+              <div className={cn(
+                "rounded-lg bg-muted p-4 min-h-[200px] text-xs font-mono whitespace-pre-wrap",
+                testOutput ? "text-foreground" : "text-muted-foreground"
+              )}>
+                {testRunning ? "Processing..." : testOutput || "Run a test to see the agent's output here..."}
               </div>
             </div>
           </div>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/* ──────────── Config Tab (extracted for readability) ──────────── */
+function ConfigTab({ agent, onSave }: { agent: AIAgent; onSave: (updates: Partial<AIAgent>) => void }) {
+  const [name, setName] = useState(agent.name);
+  const [role, setRole] = useState(agent.role);
+  const [description, setDescription] = useState(agent.description);
+  const [department, setDepartment] = useState(agent.department);
+  const [model, setModel] = useState(agent.model);
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-xl border bg-card p-5 space-y-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Identity</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[11px] text-muted-foreground">Name</label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs mt-1" />
+          </div>
+          <div>
+            <label className="text-[11px] text-muted-foreground">Role</label>
+            <Input value={role} onChange={(e) => setRole(e.target.value)} className="h-8 text-xs mt-1" />
+          </div>
+          <div>
+            <label className="text-[11px] text-muted-foreground">Description</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-xs min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-ring" />
+          </div>
+          <div>
+            <label className="text-[11px] text-muted-foreground">Department</label>
+            <Select value={department} onValueChange={setDepartment}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {INSURANCE_DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button size="sm" className="text-xs" onClick={() => onSave({ name, role, description, department })}>
+            Save Identity
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-card p-5 space-y-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Model & Performance</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[11px] text-muted-foreground">Model</label>
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {AVAILABLE_MODELS.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label} ({m.provider})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-lg border p-3 text-center">
+              <p className="text-lg font-semibold">{agent.tasksProcessed.toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground">Tasks</p>
+            </div>
+            <div className="rounded-lg border p-3 text-center">
+              <p className="text-lg font-semibold text-success">{agent.successRate}%</p>
+              <p className="text-[10px] text-muted-foreground">Success</p>
+            </div>
+            <div className="rounded-lg border p-3 text-center">
+              <p className="text-lg font-semibold">{agent.avgProcessingTime}</p>
+              <p className="text-[10px] text-muted-foreground">Avg Time</p>
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] text-muted-foreground">Integrations</label>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {agent.integrations.map((int) => (
+                <Badge key={int} variant="outline" className="text-[10px]">{int}</Badge>
+              ))}
+            </div>
+          </div>
+          <Button size="sm" className="text-xs" onClick={() => onSave({ model })}>
+            Save Model
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
