@@ -419,9 +419,8 @@ export default function AIAssistantPage() {
   );
 }
 
-// Instead of an iframe, render actual platform content
+// Platform preview component
 function PlatformPreview({ route }: { route: string }) {
-  const navigate = (await import("react-router-dom")).useNavigate;
   // We'll show a visual preview card for each section
   const previews: Record<string, { title: string; description: string; stats: { label: string; value: string }[] }> = {
     "/": {
