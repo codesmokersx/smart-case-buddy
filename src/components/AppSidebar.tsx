@@ -7,6 +7,7 @@ import {
   BarChart3,
   Settings,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -32,6 +33,7 @@ const navItems = [
   { title: "Documents", url: "/documents", icon: FileText },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Admin", url: "/admin", icon: Settings },
+  { title: "Documentation", url: "/docs", icon: BookOpen },
 ];
 
 export function AppSidebar() {
