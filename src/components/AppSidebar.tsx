@@ -33,6 +33,7 @@ const navItems = [
   { title: "Documents", url: "/documents", icon: FileText },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Admin", url: "/admin", icon: Settings },
+  { title: "Documentation", url: "/docs", icon: BookOpen },
 ];
 
 export function AppSidebar() {
