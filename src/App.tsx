@@ -24,6 +24,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/assistant" element={<AIAssistantPage />} />
           <Route path="/cases/:id" element={<CaseWorkspace />} />
           <Route path="/cases" element={<CasesPage />} />
           <Route path="/workflows" element={<WorkflowsPage />} />
