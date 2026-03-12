@@ -12,6 +12,7 @@ import DocumentsPage from "./pages/DocumentsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AdminPage from "./pages/AdminPage";
 import AIAssistantPage from "./pages/AIAssistantPage";
+import DocsPage from "./pages/DocsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
