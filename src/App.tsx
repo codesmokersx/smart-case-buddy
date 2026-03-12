@@ -11,6 +11,7 @@ import AgentsPage from "./pages/AgentsPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AdminPage from "./pages/AdminPage";
+import AIAssistantPage from "./pages/AIAssistantPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/assistant" element={<AIAssistantPage />} />
           <Route path="/cases/:id" element={<CaseWorkspace />} />
           <Route path="/cases" element={<CasesPage />} />
           <Route path="/workflows" element={<WorkflowsPage />} />

@@ -6,7 +6,7 @@ import {
   FileText,
   BarChart3,
   Settings,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -25,6 +25,7 @@ import {
 
 const navItems = [
   { title: "Operations Inbox", url: "/", icon: Inbox },
+  { title: "AI Assistant", url: "/assistant", icon: Sparkles },
   { title: "Cases", url: "/cases", icon: Briefcase },
   { title: "Workflows", url: "/workflows", icon: GitBranch },
   { title: "AI Agents", url: "/agents", icon: Bot },
@@ -43,12 +44,12 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
-            <Zap className="h-4 w-4 text-accent-foreground" />
+            <Sparkles className="h-4 w-4 text-accent-foreground" />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-sidebar-primary">
-                InsurAI
+                Aurastack
               </span>
               <span className="text-[10px] text-sidebar-muted">
                 AI Workforce
